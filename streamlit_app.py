@@ -1,47 +1,60 @@
 import streamlit as st
+import pandas as pd
 
-# ページ設定
-st.set_page_config(page_title="動画学習クイズアプリ", layout="wide")
+st.set_page_config(page_title="クイズ作成ツール", layout="wide")
 
 # --- サイドバー (チェックリスト A-F) ---
 with st.sidebar:
-    st.header("📋 完了チェックリスト")
-    st.write("各項目を確認してください：")
+    st.header("📋 確認項目")
+    # シンプルなチェックボックス（進捗率は削除）
+    for label in ["A", "B", "C", "D", "E", "F"]:
+        st.checkbox(f"項目 {label}")
+
+# --- メインエリア ---
+st.title("🎥 動画クイズ・エディター")
+
+# 動画表示エリア
+st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ") # サンプルURL
+
+st.divider()
+
+# --- クイズ作成フォーム ---
+st.subheader("📝 クイズ案の作成")
+
+with st.form("quiz_form"):
+    question = st.text_input("問題文を入力してください", placeholder="例：動画内で紹介された手法の名前は？")
     
-    # チェックボックスの作成
-    item_a = st.checkbox("項目 A: 導入部分の理解")
-    item_b = st.checkbox("項目 B: 基本用語の把握")
-    item_c = st.checkbox("項目 C: デモの確認")
-    item_d = st.checkbox("項目 D: 応用例の検討")
-    item_e = st.checkbox("項目 E: 数式の理解")
-    item_f = st.checkbox("項目 F: まとめ")
+    col1, col2 = st.columns(2)
+    with col1:
+        choice_a = st.text_input("選択肢 A")
+        choice_b = st.text_input("選択肢 B")
+    with col2:
+        choice_c = st.text_input("選択肢 C")
+        correct_ans = st.selectbox("正解を選択", ["A", "B", "C"])
 
-    # 進捗率の表示（おまけ）
-    checks = [item_a, item_b, item_c, item_d, item_e, item_f]
-    progress = sum(checks) / len(checks)
-    st.progress(progress)
-    st.write(f"進捗率: {int(progress * 100)}%")
+    # フォーム内の送信ボタン
+    submitted = st.form_submit_button("作成したクイズを確定する")
 
-# --- メインエリア (動画とクイズ) ---
-st.title("🎥 動画でクイズ学習")
+# --- 保存処理 ---
+if submitted:
+    # データをデータフレームにまとめる
+    quiz_data = {
+        "問題": [question],
+        "選択肢A": [choice_a],
+        "選択肢B": [choice_b],
+        "選択肢C": [choice_c],
+        "正解": [correct_ans]
+    }
+    df = pd.DataFrame(quiz_data)
+    
+    st.success("クイズ案を確定しました！下のボタンからダウンロードできます。")
+    st.table(df) # プレビュー表示
 
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    st.subheader("動画を視聴")
-    # YouTube動画の埋め込み (サンプルURL)
-    video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
-    st.video(video_url)
-
-with col2:
-    st.subheader("✍️ クイズ")
-    q1 = st.radio(
-        "動画の内容に関する質問：〇〇の正解は？",
-        ["選択肢 1", "選択肢 2", "選択肢 3"]
+    # CSVとしてダウンロードするボタン
+    csv = df.to_csv(index=False).encode('utf-8-sig') # Shift-JIS環境(Excel)でも化けないようにsig付与
+    st.download_button(
+        label="📥 CSVとして保存（ダウンロード）",
+        data=csv,
+        file_name="my_quiz_draft.csv",
+        mime="text/csv",
     )
-    
-    if st.button("回答する"):
-        if q1 == "選択肢 1":
-            st.success("正解です！")
-        else:
-            st.error("残念！もう一度動画を見てみましょう。")
