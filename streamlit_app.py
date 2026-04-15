@@ -63,7 +63,7 @@ uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["
 if uploaded_file:
     res = get_check_results(uploaded_file.read(), uploaded_file.name)
     if res:
-        score = sum(1 for r in res if r["判定"] == "Done")
+        score = sum(1 for r in res if r["判定"] == "✔")
         st.subheader(f"スコア: {score} / 12")
         
         # テーブルを表示
