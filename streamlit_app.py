@@ -66,7 +66,7 @@ def get_check_results(file_bytes, file_name):
 st.set_page_config(page_title="ODS Checker", layout="wide")
 st.title("📊 課題3のファイル提出前の最低限のチェック")
 st.write("**このサイトで課題3の提出はできません。** 最低限の条件をクリアするかどうか、課題３のファイルをチェックするためのサイトです。")
-st.write("このサイトでの判定結果のスクリーンショット画像を撮って、課題3のファイルをMoodle上で提出するときにそれも添付してください。")
+st.write("このサイトでの判定結果のスクリーンショット画像を撮って、課題3のファイルをMoodle上で提出するときにその画像も添付してください。")
 
 uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"], label_visibility="collapsed")
 
