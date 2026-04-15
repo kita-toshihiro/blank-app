@@ -76,8 +76,7 @@ def get_check_results(file_bytes, file_name):
 st.set_page_config(page_title="ODS Checker", layout="wide")
 
 st.title("📊 課題3 ファイル提出前の最低限のチェック")
-st.info("このサイトは、課題3の提出ファイルが最低限の条件を満たしているか確認するためのツールです。")
-st.write("**このサイトでは、課題3の提出はできません。**")
+st.info("このサイトは、課題3の提出ファイルが最低限の条件を満たしているか確認するためのツールです。課題3の**提出はできません。**")
 
 uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
 
