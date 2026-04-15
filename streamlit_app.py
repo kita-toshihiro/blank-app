@@ -52,7 +52,7 @@ def get_check_results(file_bytes, file_name):
         ("12. 「試験と成績」のグラフ", has_chart("試験と成績"), "あり" if has_chart("試験と成績") else "なし"),
     ]
     
-    return [{"項目": c[0], "判定": "Done" if c[1] else "NG", "実際の内容/数式": str(c[2])} for c in checks]
+    return [{"項目": c[0], "判定": "✔" if c[1] else "NG", "実際の内容/数式": str(c[2])} for c in checks]
 
 # --- UI ---
 st.set_page_config(page_title="ODS Checker", layout="wide")
@@ -71,6 +71,6 @@ if uploaded_file:
         
         if score == 12:
             st.balloons()
-            st.success("完璧です！すべての項目をクリアしました。")
+            st.success("すべての項目の最低条件をクリアしました。")
     else:
         st.error("ファイルを読み込めませんでした。")
