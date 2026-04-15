@@ -1,7 +1,6 @@
 import streamlit as st
 import ezodf
 import io
-import re
 
 def check_ods_task(file_bytes):
     doc = ezodf.opendoc(io.BytesIO(file_bytes))
@@ -14,7 +13,7 @@ def check_ods_task(file_bytes):
     sheet1_exists = "シート 1" in found_sheets or "Sheet1" in found_sheets
     all_required_exists = all(s in found_sheets for s in required_sheets) and sheet1_exists
     results.append({
-        "check": "5つのシート（sample, data, シート1, 試験と成績, 結果）が存在するか",
+        "check": "5つのシート（sample, data, シート1, 試験と成績, 結果）が含まれている",
         "status": "Done" if all_required_exists else "NG"
     })
 
@@ -22,79 +21,100 @@ def check_ods_task(file_bytes):
     sheet_exam = sheets.get("試験と成績")
     
     if sheet_exam:
-        # ヘルパー：セルの値と数式を取得 (1-based index)
-        def get_cell_info(row, col):
+        def get_cell(row_idx, col_idx): # 1-based index
             try:
-                cell = sheet_exam.rows()[row-1][col-1]
-                return {"value": cell.value, "formula": cell.formula if cell.formula else ""}
+                # ezodfのrowsは0-indexed
+                return sheet_exam.rows()[row_idx-1][col_idx-1]
             except:
-                return {"value": None, "formula": ""}
+                return None
 
-        # 3. セル D34 のチェック (オートフィル想定範囲 D34:J34)
+        # --- 判定項目 ---
+        
+        # 3. D34:J34 の値 (80以上100以下)
         d34_j34_ok = True
-        for col in range(4, 11):  # D(4)からJ(10)
-            c = get_cell_info(34, col)
-            val = c["value"]
-            if val is None or not (80 <= float(val) <= 100):
+        for col in range(4, 11): # D(4) to J(10)
+            c = get_cell(34, col)
+            if c is None or c.value is None or not (80 <= float(c.value) <= 100):
                 d34_j34_ok = False
-        results.append({"check": "D34:J34 の値が 80以上100以下か", "status": "Done" if d34_j34_ok else "NG"})
+                break
+        results.append({"check": "D34:J34 のオートフィル後の値が 80以上100以下である", "status": "Done" if d34_j34_ok else "NG"})
 
-        # 6. 試験の実施回数 (R46:R75想定) count関数
-        count_ok = True
+        # 4. K46:Q75 (OK または ー)
+        k46_q75_ok = True
         for row in range(46, 76):
-            c = get_cell_info(row, 18) # R列
-            if c["value"] != 7 or "count" not in c["formula"].lower():
-                count_ok = False
-        results.append({"check": "実施回数が7であり、count関数を使用しているか", "status": "Done" if count_ok else "NG"})
+            for col in range(11, 18): # K(11) to Q(17)
+                c = get_cell(row, col)
+                if c is None or c.value not in ["OK", "ー", "-", "—"]: # 表記ゆれ考慮
+                    k46_q75_ok = False
+                    break
+            if not k46_q75_ok: break
+        results.append({"check": "K46:Q75 のオートフィル後の値が「OK」か「ー」である", "status": "Done" if k46_q75_ok else "NG"})
 
-        # 7. 合格回数 (S46:S75想定) countif関数
-        countif_ok = True
+        # 6. R列 実施回数 (数値7 かつ count関数)
+        r_col_ok = True
         for row in range(46, 76):
-            c = get_cell_info(row, 19) # S列
-            val = c["value"]
-            if val is None or not (0 <= int(val) <= 7) or "countif" not in c["formula"].lower():
-                countif_ok = False
-        results.append({"check": "合格回数が0-7で、countif関数を使用しているか", "status": "Done" if countif_ok else "NG"})
+            c = get_cell(row, 18) # R
+            if c is None or c.value != 7 or "count" not in (c.formula or "").lower():
+                r_col_ok = False
+                break
+        results.append({"check": "R46:R75 が数値 7 で、count 関数を用いた式である", "status": "Done" if r_col_ok else "NG"})
 
-        # 8. 平均点 (T46:T75想定) round, average
-        avg_ok = True
+        # 7. S列 合格回数 (0-7整数 かつ countif関数)
+        s_col_ok = True
         for row in range(46, 76):
-            c = get_cell_info(row, 20) # T列
-            val = c["value"]
-            if val is None or not (80 <= float(val) <= 100) or "round" not in c["formula"].lower() or "average" not in c["formula"].lower():
-                avg_ok = False
-        results.append({"check": "平均点が80-100の整数で、round/averageを使用しているか", "status": "Done" if avg_ok else "NG"})
+            c = get_cell(row, 19) # S
+            if c is None or not (0 <= (c.value or -1) <= 7) or "countif" not in (c.formula or "").lower():
+                s_col_ok = False
+                break
+        results.append({"check": "S46:S75 が 0〜7 の整数で、countif 関数を用いた式である", "status": "Done" if s_col_ok else "NG"})
 
-    # 「結果」シートの解析（簡易判定）
+        # 8. T列 平均点 (80-100整数 かつ round, average関数)
+        t_col_ok = True
+        for row in range(46, 76):
+            c = get_cell(row, 20) # T
+            formula = (c.formula or "").lower()
+            if c is None or not (80 <= (c.value or 0) <= 100) or "round" not in formula or "average" not in formula:
+                t_col_ok = False
+                break
+        results.append({"check": "T46:T75 が 80〜100 の整数で、round と average 関数を用いた式である", "status": "Done" if t_col_ok else "NG"})
+
+        # 9. U列 評価 (「不可」か「平均点」と同じ)
+        u_col_ok = True
+        for row in range(46, 76):
+            c_u = get_cell(row, 21) # U (評価)
+            c_t = get_cell(row, 20) # T (平均点)
+            if c_u is None or c_t is None or (c_u.value != "不可" and c_u.value != c_t.value):
+                u_col_ok = False
+                break
+        results.append({"check": "U46:U75 の評価欄が「不可」または「平均点」と同じである", "status": "Done" if u_col_ok else "NG"})
+
+    # 「結果」シートのグラフチェック
     sheet_result = sheets.get("結果")
     if sheet_result:
-        # グラフの存在確認は ezodf では限定的ですが、オブジェクトがあるかチェック
-        has_chart = len(sheet_result.objects) > 0
-        results.append({"check": "「結果」シートにグラフ等が存在するか", "status": "Done" if has_chart else "NG"})
+        # グラフがある場合、XMLのなかに 'draw:control' や 'draw:frame' などが含まれる
+        # ezodfの簡易的な判定として、xmlツリー内に 'chart' という文字列が含まれるかを確認
+        xml_content = sheet_result.xmlnode.decode() if hasattr(sheet_result.xmlnode, 'decode') else str(sheet_result.xmlnode)
+        has_chart = "chart" in xml_content.lower() or "draw:frame" in xml_content.lower()
+        results.append({"check": "「結果」シートにグラフが貼り付けられている", "status": "Done" if has_chart else "NG"})
     else:
-        results.append({"check": "「結果」シートの解析", "status": "NG"})
+        results.append({"check": "「結果」シートが存在しない", "status": "NG"})
 
     return results
 
-# --- Streamlit アプリ構成 ---
-st.set_page_config(page_title="ODS課題自動判定", layout="centered")
-st.title("📑 ODS課題・提出前自動セルフチェック")
+# --- Streamlit UI ---
+st.title("📊 ODS 課題自動判定システム")
 
-uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
+uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"])
 
 if uploaded_file:
-    file_bytes = uploaded_file.read()
-    check_results = check_ods_task(file_bytes)
-    
-    st.subheader("判定結果")
-    for res in check_results:
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.write(res["check"])
-        with col2:
-            if res["status"] == "Done":
-                st.success("Done")
+    try:
+        res = check_ods_task(uploaded_file.read())
+        for item in res:
+            col1, col2 = st.columns([4, 1])
+            col1.write(item["check"])
+            if item["status"] == "Done":
+                col2.success("Done")
             else:
-                st.error("NG")
-
-    st.info("※オートフィルのシミュレーションはアップロード時点のセルの状態に基づき判定しています。")
+                col2.error("NG")
+    except Exception as e:
+        st.error(f"解析中にエラーが発生しました: {e}")
