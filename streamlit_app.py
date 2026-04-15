@@ -9,84 +9,80 @@ def check_ods_task(file_bytes):
     results = []
 
     # --- 1. シート構成チェック ---
-    required = ["sample", "data", "試験と成績", "結果"]
-    # 「シート 1」または「Sheet1」系の表記ゆれを許容
-    sheet1_variations = ["シート 1", "シート1", "Sheet1", "Sheet 1"]
-    has_sheet1 = any(s in found_sheets for s in sheet1_variations)
-    has_others = all(s in found_sheets for s in required)
+    # 必須シートリスト（シート1系以外）
+    core_required = ["sample", "data", "試験と成績", "結果"]
+    # シート1 または Sheet1 があるか
+    sheet1_exists = "シート 1" in found_sheets or "Sheet1" in found_sheets
+    # 全てのコアシートが存在するか
+    all_core_exists = all(s in found_sheets for s in core_required)
     
-    status_sheets = "Done" if (has_sheet1 and has_others) else "NG"
+    is_sheet_structure_ok = all_core_exists and sheet1_exists
+
     results.append({
-        "check": "5つのシート（sample, data, シート1, 試験と成績, 結果）が含まれている",
-        "status": status_sheets,
-        "detail": f"見つかったシート: {', '.join(found_sheets)}"
+        "check": "5つのシート（sample, data, シート 1(or Sheet1), 試験と成績, 結果）が含まれている",
+        "status": "Done" if is_sheet_structure_ok else "NG"
     })
 
-    # --- 2. 「試験と成績」シートの COUNT 関数判定 ---
+    # --- 2. 「試験と成績」シートの数式チェック ---
     sheet_exam = sheets.get("試験と成績")
-    status_count = "NG"
-    count_detail = "シートが見つかりません"
-
+    
     if sheet_exam:
+        r_col_ok = True
+        # 参考コードに基づき R46:R75 (18列目) をチェック
+        # ezodfのインデックスは0始まりのため、列は17、行は45〜74
         try:
-            # 探索範囲（例として46行目から75行目、R列を確認）
-            # ezodfのrows[row_idx][col_idx]は 0-indexed
-            target_row = 45 # 46行目
-            target_col = 17 # R列
-            
-            cell = sheet_exam.rows()[target_row][target_col]
-            val = cell.value
-            # ezodfのformulaは "oooc:=COUNT(...)" のような形式で取得される
-            formula = str(cell.formula or "").lower()
-
-            # 判定条件：数式に count が含まれる、かつ 計算結果が 7
-            has_count_func = "count" in formula
-            is_value_7 = (val == 7 or val == 7.0)
-
-            if has_count_func and is_value_7:
-                status_count = "Done"
-                count_detail = f"数式: {cell.formula} / 結果: {val}"
-            else:
-                reasons = []
-                if not has_count_func: reasons.append("COUNT関数が使われていません（直接入力の可能性があります）")
-                if not is_value_7: reasons.append(f"結果が 7 ではありません（現在の値: {val}）")
-                count_detail = "、".join(reasons)
+            for row_idx in range(45, 75):
+                cell = sheet_exam.rows()[row_idx][17] # R列
                 
-        except Exception as e:
-            count_detail = f"解析エラー（指定のセルにデータがない可能性があります）: {e}"
+                formula = (cell.formula or "").lower()
+                value = cell.value
+                
+                # count関数が含まれているか、かつ結果が7か
+                if "count" not in formula or value != 7:
+                    r_col_ok = False
+                    break
+        except IndexError:
+            r_col_ok = False
 
-    results.append({
-        "check": "「試験と成績」シート：実施回数欄に COUNT 関数が使われ、結果が 7 である",
-        "status": status_count,
-        "detail": count_detail
-    })
+        results.append({
+            "check": "「試験の実施回数」欄（R46:R75）にcount関数が使われ、結果が7である",
+            "status": "Done" if r_col_ok else "NG"
+        })
+    else:
+        results.append({
+            "check": "「試験と成績」シートが見つからないため判定不可",
+            "status": "NG"
+        })
 
     return results
 
 # --- Streamlit UI ---
-st.set_page_config(page_title="ODS課題チェッカー", page_icon="📝")
-st.title("📝 ODS 課題自動判定 (Local Mode)")
-st.caption("Gemini API を使用せず、ファイル内の数式を直接解析します。")
+st.set_page_config(page_title="ODS 課題チェック", layout="centered")
 
-uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"])
+st.title("📊 ODS 課題自動判定アプリ")
+st.write("アップロードされた .ods ファイルが課題の要件を満たしているか判定します。")
+
+uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
 
 if uploaded_file:
-    res_list = check_ods_task(uploaded_file.read())
-    
-    st.divider()
-    
-    for item in res_list:
-        col1, col2 = st.columns([0.8, 0.2])
+    try:
+        # ファイルの読み込みと判定
+        check_results = check_ods_task(uploaded_file.read())
         
-        with col1:
-            st.markdown(f"**{item['check']}**")
-            if item['status'] == "NG":
-                st.caption(f"❌ 理由: {item['detail']}")
-            else:
-                st.caption(f"✅ 内容確認: {item['detail']}")
+        st.subheader("判定結果")
+        
+        for item in check_results:
+            with st.container():
+                col1, col2 = st.columns([4, 1])
+                col1.markdown(f"**{item['check']}**")
                 
-        with col2:
-            if item["status"] == "Done":
-                st.success("Done")
-            else:
-                st.error("NG")
+                if item["status"] == "Done":
+                    col2.success("Done")
+                else:
+                    col2.error("NG")
+                    
+    except Exception as e:
+        st.error(f"解析中にエラーが発生しました。ファイル形式を確認してください。\nエラー内容: {e}")
+
+else:
+    st.info("ファイルをアップロードすると、自動的に判定が開始されます。")
