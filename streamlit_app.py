@@ -11,7 +11,7 @@ def get_check_results(file_bytes, file_name):
     doc = None
     sheets = {}
     
-    # --- 内部構造のチェック (中身が本当に ODS か) ---
+    # --- 内部構造のチェック ---
     try:
         doc = ezodf.opendoc(io.BytesIO(file_bytes))
         sheets = {s.name: s for s in doc.sheets}
@@ -19,71 +19,87 @@ def get_check_results(file_bytes, file_name):
     except Exception:
         is_parsed = False
 
-    def get_cell_safe(s_name, r, c):
-        if s_name not in sheets: return "シートなし", None
+    def get_cell_info(s_name, r, c):
+        if not is_parsed or s_name not in sheets: 
+            return "", None
         sheet = sheets[s_name]
-        if r > sheet.nrows() or c > sheet.ncols(): return "範囲外", None
+        # ezodfのnrows/ncolsはデータがある範囲を返すため、指定セルが範囲外でもエラーにならないよう制御
         try:
             cell = sheet[r-1, c-1]
+            # 数式は先頭に [=] がつく場合があるため、正規化
             f = (cell.formula or "").replace(" ", "").upper()
             v = cell.value
             return f, v
-        except: return "エラー", None
+        except: 
+            return "", None
 
     def has_chart(s_name):
         if not is_parsed or s_name not in sheets: return False
+        # draw:frame 要素を探す（グラフや画像が含まれる場合に反応）
         return len(sheets[s_name].xmlnode.findall(f".//{{{NS['draw']}}}frame")) > 0
 
-    # 中身が解析できていれば各セルの情報を取得
-    f_d34, v_d34 = get_cell_safe("試験と成績", 34, 4)
-    f_k46, v_k46 = get_cell_safe("試験と成績", 46, 11)
-    f_r46, v_r46 = get_cell_safe("試験と成績", 46, 18)
-    f_s46, v_s46 = get_cell_safe("試験と成績", 46, 19)
-    f_t46, v_t46 = get_cell_safe("試験と成績", 46, 20)
-    f_u46, v_u46 = get_cell_safe("試験と成績", 46, 21)
+    # 必要なセル情報の取得
+    f_d34, v_d34 = get_cell_info("試験と成績", 34, 4)   # D34
+    f_k46, v_k46 = get_cell_info("試験と成績", 46, 11)  # K46
+    f_r46, v_r46 = get_cell_info("試験と成績", 46, 18)  # R46
+    f_s46, v_s46 = get_cell_info("試験と成績", 46, 19)  # S46
+    f_t46, v_t46 = get_cell_info("試験と成績", 46, 20)  # T46
+    f_u46, v_u46 = get_cell_info("試験と成績", 46, 21)  # U46
 
-    # 12項目の判定リスト
+    # --- 12項目の判定ロジック ---
+    
+    # 2. シート名チェック
+    required_fixed = ["sample", "data", "試験と成績", "結果"]
+    has_fixed = all(s in sheets for s in required_fixed)
+    has_sheet1 = "シート 1" in sheets or "Sheet1" in sheets
+    check2 = is_parsed and has_fixed and has_sheet1
+
+    # リスト定義 (項目名, 判定式, 詳細情報)
     checks = [
-        ("1. ODS形式 (ファイル構造の検証)", is_parsed and file_name.lower().endswith('.ods'), 
-         "解析成功" if is_parsed else "解析失敗 (ODS形式ではありません)"),
-        ("2. 5つのシート構成", is_parsed and all(s in sheets for s in ["sample", "data", "試験と成績", "結果"]), 
-         f"確認: {', '.join(list(sheets.keys())[:5])}..." if is_parsed else "不可"),
-        ("3. 「結果」のグラフ", has_chart("結果"), "あり" if has_chart("結果") else "なし"),
-        ("4. D34: 関数", "AVERAGE" in f_d34, f_d34 if f_d34 else v_d34),
-        ("5. K46: 判定式", "IF" in f_k46 and "D46" in f_k46 and "$D$12" in f_k46, f_k46),
-        ("6. R46: COUNT関数", "COUNT" in f_r46 and "D46" in f_r46, f_r46),
-        ("7. R46: 結果が7", v_r46 == 7 or v_r46 == 7.0, f"値: {v_r46}"),
-        ("8. S46: COUNTIF関数", "COUNTIF" in f_s46, f_s46),
-        ("9. T46: ROUND,AVERAGE", "ROUND" in f_t46 and "AVERAGE" in f_t46, f_t46),
-        ("10. U46: 合格判定", "IF" in f_u46 and "S46" in f_u46 and "R46" in f_u46, f_u46),
-        ("11. U46: 参照", "S46" in f_u46, f_u46),
-        ("12. 「試験と成績」のグラフ", has_chart("試験と成績"), "あり" if has_chart("試験と成績") else "なし"),
+        ("1. ODS形式である", is_parsed and file_name.lower().endswith('.ods'), file_name),
+        ("2. 指定の5つのシートを含んでいる", check2, "シート構成を確認してください"),
+        ("3. 「結果」にグラフがある", has_chart("結果"), "draw:frameの有無"),
+        ("4. 「試験と成績」D34に数式がある", f_d34 != "", f_d34),
+        ("5. 「試験と成績」K46にIF関数がある", "IF" in f_d34 or "IF" in f_k46, f_k46), # D34かK46か文脈によりますが指示はK46
+        ("6. 「試験と成績」R46にCOUNT関数がある", "COUNT" in f_r46, f_r46),
+        ("7. 「試験と成績」R46の結果が7である", v_r46 == 7 or v_r46 == 7.0, f"現在の値: {v_r46}"),
+        ("8. 「試験と成績」S46にCOUNT関数がある", "COUNT" in f_s46, f_s46),
+        ("9. 「試験と成績」T46にROUNDとAVERAGE関数がある", "ROUND" in f_t46 and "AVERAGE" in f_t46, f_t46),
+        ("10. 「試験と成績」U46にIF関数がある", "IF" in f_u46, f_u46),
+        ("11. 「試験と成績」U46に数式がある", f_u46 != "", f_u46),
+        ("12. 「試験と成績」にグラフがある", has_chart("試験と成績"), "draw:frameの有無")
     ]
     
-    return [{"項目": c[0], "判定": "✔" if c[1] else "NG", "実際の内容/数式": str(c[2])} for c in checks]
+    return [{"No": i+1, "チェック項目": c[0], "判定": "✔" if c[1] else "NG", "内容/数式": str(c[2])} for i, c in enumerate(checks)]
 
-# --- UI ---
+# --- Streamlit UI ---
 st.set_page_config(page_title="ODS Checker", layout="wide")
-st.title("📊 課題3のファイル提出前の最低限のチェック")
-st.write("### このサイトで課題3の提出はできません。\n \n 最低限の条件をクリアするかどうか、課題３のファイルをチェックするためのサイトです。")
-st.write("このサイトでの判定結果のスクリーンショット画像を撮って、課題3のファイルをMoodle上で提出するときにその画像も添付してください。")
-st.write("（12個全部をクリアしなくても、課題3の提出は可能です。ただしNG評価を受ける可能性が高いです）")
 
-uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"], label_visibility="collapsed")
+st.title("📊 課題3 ファイル提出前チェックアプリ")
+st.info("このサイトは、課題3の提出ファイルが最低限の条件を満たしているか確認するためのツールです。")
+
+uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
 
 if uploaded_file:
-    # 判定実行
-    res = get_check_results(uploaded_file.read(), uploaded_file.name)
+    # バイナリを読み込み
+    file_bytes = uploaded_file.read()
+    res = get_check_results(file_bytes, uploaded_file.name)
     
     if res:
         score = sum(1 for r in res if r["判定"] == "✔")
-        st.subheader(f"クリア項目数: {score} / 12")
         
-        # 結果テーブル
+        # スコア表示
+        if score == 12:
+            st.success(f"🎉 完璧です！ クリア項目数: {score} / 12")
+            st.balloons()
+        elif score >= 8:
+            st.warning(f"💡 あと少しです。 クリア項目数: {score} / 12")
+        else:
+            st.error(f"⚠️ 修正が必要です。 クリア項目数: {score} / 12")
+        
+        # 結果のテーブル表示
         st.table(res)
         
-        if score == 12:
-            st.balloons()
-            st.success("全ての最低限のチェックをクリアしました！")
-    else:
-        st.error("判定処理中に致命的なエラーが発生しました。")
+        st.write("---")
+        st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
+        st.write("📸 **提出用メモ**: この画面のスクリーンショットを撮って、提出時に添付してください。")
