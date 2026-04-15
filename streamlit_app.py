@@ -113,5 +113,5 @@ if uploaded_file:
         #st.table(res)
         
         st.write("---")
-        st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
+        # st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
         st.write("📸 **提出用メモ**: この画面のスクリーンショットを撮って、提出時に添付してください。")
