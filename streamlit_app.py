@@ -57,7 +57,7 @@ def get_check_results(file_bytes, file_name):
     # リスト定義 (項目名, 判定式, 詳細情報)
     checks = [
         ("1. ODS形式である", is_parsed and file_name.lower().endswith('.ods'), file_name),
-        ("2. 指定の5つのシートを含んでいる", check2, "シート構成を確認してください"),
+        ("2. 指定の5つのシートを含んでいる", sheets),
         ("3. 「結果」にグラフがある", has_chart("結果"), "draw:frameの有無"),
         ("4. 「試験と成績」D34に数式がある", f_d34 != "", f_d34),
         ("5. 「試験と成績」K46に判定式がある", "IF" in f_d34 or "IF" in f_k46, f_k46), # D34かK46か文脈によりますが指示はK46
