@@ -1,13 +1,20 @@
 import streamlit as st
 import ezodf
 import io
-import re
+
+# ODFのネームスペース定義（グラフ/図形の抽出用）
+NS = {
+    'table': 'urn:oasis:names:tc:opendocument:xmlns:table:1.0',
+    'draw': 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0',
+    'office': 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+    'text': 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
+}
 
 def check_ods_task(file_bytes, file_name):
     try:
         doc = ezodf.opendoc(io.BytesIO(file_bytes))
     except Exception as e:
-        return [{"check": "ファイル解析エラー", "status": "NG", "detail": str(e)}]
+        return [{"check": "1. ODS形式の読み込み", "status": "NG"}]
 
     sheets = {s.name: s for s in doc.sheets}
     found_sheets = list(sheets.keys())
@@ -15,106 +22,96 @@ def check_ods_task(file_bytes, file_name):
 
     # --- 1. 形式チェック ---
     is_ods = file_name.lower().endswith('.ods')
-    results.append({"check": "1. OpenDocument Spreadsheet 形式(ODS 形式)である", "status": "Done" if is_ods else "NG"})
+    results.append({"check": "1. ODS形式のファイルである", "status": "Done" if is_ods else "NG"})
 
     # --- 2. シート構成チェック ---
     core_required = ["sample", "data", "試験と成績", "結果"]
     sheet1_exists = "シート 1" in found_sheets or "Sheet1" in found_sheets
     all_core_exists = all(s in found_sheets for s in core_required)
-    results.append({"check": "2. 5つのシート（sample, data, シート 1, 試験と成績, 結果）を含む", "status": "Done" if (all_core_exists and sheet1_exists) else "NG"})
+    results.append({"check": "2. 指定の5つのシートを含んでいる", "status": "Done" if (all_core_exists and sheet1_exists) else "NG"})
 
-    # --- ヘルパー関数: 数式と値の取得 ---
+    # ヘルパー: 指定セルの数式と値を取得 (1-indexed)
     def get_cell_info(sheet_name, row, col):
-        # row, col は 1-indexed (A1 = 1, 1)
-        if sheet_name not in sheets:
-            return None, None
+        if sheet_name not in sheets: return None, None
         try:
             cell = sheets[sheet_name].cells[(row-1, col-1)]
-            return (cell.formula or "").replace(" ", ""), cell.value
-        except:
-            return None, None
+            return (cell.formula or "").replace(" ", "").upper(), cell.value
+        except: return None, None
 
-    # --- 3. グラフチェック（結果シート） ---
-    # ezodfではsheet.objectsにグラフなどのフレームが含まれる
-    res_sheet = sheets.get("結果")
-    has_graph_res = len(res_sheet.objects) > 0 if res_sheet else False
-    results.append({"check": "3. グラフをシート「結果」に貼り付けている", "status": "Done" if has_graph_res else "NG"})
+    # ヘルパー: シート内にグラフ（draw:frame）があるかチェック
+    def has_chart(sheet_name):
+        if sheet_name not in sheets: return False
+        # xmlnode内から draw:frame を探す
+        frames = sheets[sheet_name].xmlnode.findall(f".//{{{NS['draw']}}}frame")
+        return len(frames) > 0
 
-    # --- 4-11. 試験と成績シートの詳細チェック ---
-    sheet_name = "試験と成績"
-    
-    # 4. D34: AVERAGE関数
-    f, v = get_cell_info(sheet_name, 34, 4) # D34
-    results.append({"check": "4. セル D34 に AVERAGE 関数を用いた数式がある", "status": "Done" if f and "AVERAGE" in f.upper() else "NG"})
+    # --- 3. グラフ（結果シート） ---
+    results.append({"check": "3. シート「結果」にグラフがある", "status": "Done" if has_chart("結果") else "NG"})
 
-    # 5. K46: IF(D46>=$D$12, $H$9, $H$10)
-    f, v = get_cell_info(sheet_name, 46, 11) # K46
-    cond5 = f and "IF" in f.upper() and "D46" in f and "$D$12" in f
-    results.append({"check": "5. セル K46 に IF関数の判定式がある", "status": "Done" if cond5 else "NG"})
+    # --- 4. 試験と成績 D34: AVERAGE ---
+    f, v = get_cell_info("試験と成績", 34, 4)
+    results.append({"check": "4. D34にAVERAGE関数がある", "status": "Done" if f and "AVERAGE" in f else "NG"})
 
-    # 6. R46: COUNT(D46:J46)
-    f, v = get_cell_info(sheet_name, 46, 18) # R46
-    cond6 = f and "COUNT" in f.upper() and "D46" in f and "J46" in f
-    results.append({"check": "6. セル R46 に COUNT(D46:J46) 系の数式がある", "status": "Done" if cond6 else "NG"})
+    # --- 5. 試験と成績 K46: IF(D46>=$D$12, $H$9, $H$10) ---
+    f, v = get_cell_info("試験と成績", 46, 11)
+    cond5 = f and "IF" in f and "D46" in f and "$D$12" in f
+    results.append({"check": "5. K46にIF関数の判定式がある", "status": "Done" if cond5 else "NG"})
 
-    # 7. R46 の結果が 7
-    results.append({"check": "7. セル R46 の計算結果が 7 になっている", "status": "Done" if v == 7 else "NG"})
+    # --- 6. 試験と成績 R46: COUNT(D46:J46) ---
+    f, v = get_cell_info("試験と成績", 46, 18)
+    cond6 = f and "COUNT" in f and "D46" in f and "J46" in f
+    results.append({"check": "6. R46にCOUNT関数の数式がある", "status": "Done" if cond6 else "NG"})
 
-    # 8. S46: COUNTIF(K46:Q46, $H$9)
-    f, v = get_cell_info(sheet_name, 46, 19) # S46
-    cond8 = f and "COUNTIF" in f.upper() and "K46" in f and "$H$9" in f
-    results.append({"check": "8. セル S46 に COUNTIF 系の数式がある", "status": "Done" if cond8 else "NG"})
+    # --- 7. R46の結果が7 ---
+    results.append({"check": "7. R46の計算結果が7である", "status": "Done" if v == 7 else "NG"})
 
-    # 9. T46: ROUND(AVERAGE(D46:J46),0)
-    f, v = get_cell_info(sheet_name, 46, 20) # T46
-    cond9 = f and "ROUND" in f.upper() and "AVERAGE" in f.upper()
-    results.append({"check": "9. セル T46 に ROUND と AVERAGE の数式がある", "status": "Done" if cond9 else "NG"})
+    # --- 8. S46: COUNTIF(K46:Q46, $H$9) ---
+    f, v = get_cell_info("試験と成績", 46, 19)
+    cond8 = f and "COUNTIF" in f and "K46" in f and "$H$9" in f
+    results.append({"check": "8. S46にCOUNTIF関数の数式がある", "status": "Done" if cond8 else "NG"})
 
-    # 10. U46: IF(S46>=R46*$F$21,T46,$G$22)
-    f, v = get_cell_info(sheet_name, 46, 21) # U46
-    cond10 = f and "IF" in f.upper() and "S46" in f and "R46" in f and "$F$21" in f
-    results.append({"check": "10. セル U46 に合格判定の IF 数式がある", "status": "Done" if cond10 else "NG"})
+    # --- 9. T46: ROUND(AVERAGE(D46:J46),0) ---
+    f, v = get_cell_info("試験と成績", 46, 20)
+    cond9 = f and "ROUND" in f and "AVERAGE" in f
+    results.append({"check": "9. T46にROUND(AVERAGE)の数式がある", "status": "Done" if cond9 else "NG"})
 
-    # 11. U46 が S46 を参照しているか
-    results.append({"check": "11. セル U46 に S46 を参照する数式がある", "status": "Done" if f and "S46" in f else "NG"})
+    # --- 10. U46: IF(S46>=R46*$F$21,T46,$G$22) ---
+    f, v = get_cell_info("試験と成績", 46, 21)
+    cond10 = f and "IF" in f and "S46" in f and "R46" in f
+    results.append({"check": "10. U46に合格判定のIF数式がある", "status": "Done" if cond10 else "NG"})
 
-    # 12. 試験と成績シートにグラフがあるか
-    exam_sheet = sheets.get("試験と成績")
-    has_graph_exam = len(exam_sheet.objects) > 0 if exam_sheet else False
-    results.append({"check": "12. ＜グラフを作成するための表＞付近にグラフがある", "status": "Done" if has_graph_exam else "NG"})
+    # --- 11. U46がS46を参照 ---
+    results.append({"check": "11. U46の数式がS46を参照している", "status": "Done" if f and "S46" in f else "NG"})
+
+    # --- 12. 試験と成績シートにグラフがある ---
+    results.append({"check": "12. 「試験と成績」の表付近にグラフがある", "status": "Done" if has_chart("試験と成績") else "NG"})
 
     return results
 
-# --- Streamlit UI ---
-st.set_page_config(page_title="ODS 課題チェック", layout="centered")
+# --- Streamlit 表示部分 ---
+st.set_page_config(page_title="ODS 課題チェック", layout="wide")
 
-st.title("📊 ODS 課題自動判定アプリ")
-st.write("アップロードされたファイルをスキャンし、12個のチェック項目を確認します。")
-
-uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
+st.title("📊 ODS 課題自動判定")
+uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"])
 
 if uploaded_file:
-    with st.spinner('判定中...'):
-        file_bytes = uploaded_file.read()
-        check_results = check_ods_task(file_bytes, uploaded_file.name)
-        
-        st.subheader("判定結果一覧")
-        
-        # サマリー表示
-        done_count = sum(1 for item in check_results if item["status"] == "Done")
-        st.metric("クリア項目数", f"{done_count} / 12")
-
-        # 詳細表示
-        for item in check_results:
-            col1, col2 = st.columns([5, 1])
-            col1.write(item["check"])
+    check_results = check_ods_task(uploaded_file.read(), uploaded_file.name)
+    
+    # スコア計算
+    done_count = sum(1 for item in check_results if item["status"] == "Done")
+    st.subheader(f"判定スコア: {done_count} / 12")
+    
+    # テーブル形式で結果表示
+    cols = st.columns(2)
+    for i, item in enumerate(check_results):
+        target_col = cols[i % 2]
+        with target_col.container():
+            c1, c2 = st.columns([4, 1])
+            c1.info(item["check"]) if item["status"] == "Done" else c1.warning(item["check"])
             if item["status"] == "Done":
-                col2.success("Done")
+                c2.success("Done")
             else:
-                col2.error("NG")
-        
-        if done_count == 12:
-            st.balloons()
-            st.success("おめでとうございます！すべての項目をクリアしました！")
-else:
-    st.info("ファイルをアップロードしてください。")
+                c2.error("NG")
+
+    if done_count == 12:
+        st.balloons()
