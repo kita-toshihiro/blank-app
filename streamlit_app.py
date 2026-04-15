@@ -67,6 +67,7 @@ st.set_page_config(page_title="ODS Checker", layout="wide")
 st.title("📊 課題3のファイル提出前の最低限のチェック")
 st.write("### このサイトで課題3の提出はできません。\n \n 最低限の条件をクリアするかどうか、課題３のファイルをチェックするためのサイトです。")
 st.write("このサイトでの判定結果のスクリーンショット画像を撮って、課題3のファイルをMoodle上で提出するときにその画像も添付してください。")
+st.write("（12個全部をクリアしなくても、課題3の提出は可能です。ただしNG評価を受ける可能性が高いです）")
 
 uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"], label_visibility="collapsed")
 
