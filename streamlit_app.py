@@ -51,7 +51,7 @@ def get_check_results(file_bytes, file_name):
     # 2. シート名チェック
     required_fixed = ["sample", "data", "試験と成績", "結果"]
     has_fixed = all(s in sheets for s in required_fixed)
-    has_sheet1 = "シート 1" in sheets or "Sheet1" in sheets
+    has_sheet1 = "シート 1" in sheets or "Sheet1" in sheets or "シート１" in sheets or "シート1" in sheets
     check2 = is_parsed and has_fixed and has_sheet1
 
     # リスト定義 (項目名, 判定式, 詳細情報)
