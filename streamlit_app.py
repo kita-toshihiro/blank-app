@@ -108,7 +108,7 @@ if uploaded_file:
             st.error(f"⚠️ 修正が必要です。 クリア項目数: {score} / 12")
         
         # 結果のテーブル表示
-        st.dataframe(res, use_container_width=True)
+        st.dataframe(res, use_container_width=True, height=500)
         #st.table(res)
         
         st.write("---")
