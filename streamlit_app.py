@@ -70,8 +70,18 @@ def get_check_results(file_bytes, file_name):
         ("12. 「試験と成績」にグラフがある", has_chart("試験と成績"), "draw:frameの有無")
     ]
     
-    return [{"No": i+1, "チェック項目": c[0], "判定": "✔" if c[1] else "NG", "内容/数式": str(c[2])} for i, c in enumerate(checks)]
+    # 関数の最後にある return 部分を以下のように修正します
 
+    return [
+        {
+            "No": i + 1,
+            "チェック項目": c[0],
+            "判定": "✔" if c[1] else "NG",
+            # バッククォートで囲むことで、$記号が数式として解釈されるのを防ぎます
+            "内容/数式": f"`{str(c[2])}`" if c[2] else ""
+        }
+        for i, c in enumerate(checks)
+    ]
 # --- Streamlit UI ---
 st.set_page_config(page_title="ODS Checker", layout="wide")
 
@@ -98,7 +108,8 @@ if uploaded_file:
             st.error(f"⚠️ 修正が必要です。 クリア項目数: {score} / 12")
         
         # 結果のテーブル表示
-        st.table(res)
+        st.dataframe(res, use_container_width=True)
+        #st.table(res)
         
         st.write("---")
         st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
