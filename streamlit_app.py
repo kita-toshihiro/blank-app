@@ -60,12 +60,12 @@ def get_check_results(file_bytes, file_name):
         ("2. 指定の5つのシートを含んでいる", check2, "シート構成を確認してください"),
         ("3. 「結果」にグラフがある", has_chart("結果"), "draw:frameの有無"),
         ("4. 「試験と成績」D34に数式がある", f_d34 != "", f_d34),
-        ("5. 「試験と成績」K46にIF関数がある", "IF" in f_d34 or "IF" in f_k46, f_k46), # D34かK46か文脈によりますが指示はK46
+        ("5. 「試験と成績」K46に判定式がある", "IF" in f_d34 or "IF" in f_k46, f_k46), # D34かK46か文脈によりますが指示はK46
         ("6. 「試験と成績」R46にCOUNT関数がある", "COUNT" in f_r46, f_r46),
         ("7. 「試験と成績」R46の結果が7である", v_r46 == 7 or v_r46 == 7.0, f"現在の値: {v_r46}"),
         ("8. 「試験と成績」S46にCOUNT関数がある", "COUNT" in f_s46, f_s46),
         ("9. 「試験と成績」T46にROUNDとAVERAGE関数がある", "ROUND" in f_t46 and "AVERAGE" in f_t46, f_t46),
-        ("10. 「試験と成績」U46にIF関数がある", "IF" in f_u46, f_u46),
+        ("10. 「試験と成績」U46に判定式がある", "IF" in f_u46, f_u46),
         ("11. 「試験と成績」U46に数式がある", f_u46 != "", f_u46),
         ("12. 「試験と成績」にグラフがある", has_chart("試験と成績"), "draw:frameの有無")
     ]
@@ -90,7 +90,7 @@ if uploaded_file:
         
         # スコア表示
         if score == 12:
-            st.success(f"🎉 完璧です！ クリア項目数: {score} / 12")
+            st.success(f"🎉 最低限のチェック完了。クリア項目数: {score} / 12")
             st.balloons()
         elif score >= 8:
             st.warning(f"💡 あと少しです。 クリア項目数: {score} / 12")
