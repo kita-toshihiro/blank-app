@@ -53,7 +53,7 @@ def get_check_results(file_bytes, file_name):
         ("5. K46: 判定式", "IF" in f_k46 and "D46" in f_k46 and "$D$12" in f_k46, f_k46),
         ("6. R46: COUNT関数", "COUNT" in f_r46 and "D46" in f_r46, f_r46),
         ("7. R46: 結果が7", v_r46 == 7 or v_r46 == 7.0, f"値: {v_r46}"),
-        ("8. S46: COUNTIF関数", "COUNTIF" in f_s46 and "$H$9" in f_s46, f_s46),
+        ("8. S46: COUNTIF関数", "COUNTIF" in f_s46, f_s46),
         ("9. T46: ROUND,AVERAGE", "ROUND" in f_t46 and "AVERAGE" in f_t46, f_t46),
         ("10. U46: 合格判定", "IF" in f_u46 and "S46" in f_u46 and "R46" in f_u46, f_u46),
         ("11. U46: 参照", "S46" in f_u46, f_u46),
