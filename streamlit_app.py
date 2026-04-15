@@ -6,11 +6,18 @@ import io
 NS = {'draw': 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0'}
 
 def get_check_results(file_bytes, file_name):
+    # 判定用の変数初期化
+    is_parsed = False
+    doc = None
+    sheets = {}
+    
+    # --- 内部構造のチェック (中身が本当に ODS か) ---
     try:
         doc = ezodf.opendoc(io.BytesIO(file_bytes))
         sheets = {s.name: s for s in doc.sheets}
-    except:
-        return None
+        is_parsed = True
+    except Exception:
+        is_parsed = False
 
     def get_cell_safe(s_name, r, c):
         if s_name not in sheets: return "シートなし", None
@@ -18,17 +25,16 @@ def get_check_results(file_bytes, file_name):
         if r > sheet.nrows() or c > sheet.ncols(): return "範囲外", None
         try:
             cell = sheet[r-1, c-1]
-            # 数式があれば数式、なければ値を返す
             f = (cell.formula or "").replace(" ", "").upper()
             v = cell.value
             return f, v
         except: return "エラー", None
 
     def has_chart(s_name):
-        if s_name not in sheets: return False
+        if not is_parsed or s_name not in sheets: return False
         return len(sheets[s_name].xmlnode.findall(f".//{{{NS['draw']}}}frame")) > 0
 
-    # 各セルの情報を取得
+    # 中身が解析できていれば各セルの情報を取得
     f_d34, v_d34 = get_cell_safe("試験と成績", 34, 4)
     f_k46, v_k46 = get_cell_safe("試験と成績", 46, 11)
     f_r46, v_r46 = get_cell_safe("試験と成績", 46, 18)
@@ -36,10 +42,12 @@ def get_check_results(file_bytes, file_name):
     f_t46, v_t46 = get_cell_safe("試験と成績", 46, 20)
     f_u46, v_u46 = get_cell_safe("試験と成績", 46, 21)
 
-    # 判定と「内容」のリスト
+    # 12項目の判定リスト
     checks = [
-        ("1. ODS形式", file_name.lower().endswith('.ods'), file_name),
-        ("2. 5つのシート構成", all(s in sheets for s in ["sample", "data", "試験と成績", "結果"]), f"確認済み: {', '.join(list(sheets.keys())[:5])}..."),
+        ("1. ODS形式 (ファイル構造の検証)", is_parsed and file_name.lower().endswith('.ods'), 
+         "解析成功" if is_parsed else "解析失敗 (ODS形式ではありません)"),
+        ("2. 5つのシート構成", is_parsed and all(s in sheets for s in ["sample", "data", "試験と成績", "結果"]), 
+         f"確認: {', '.join(list(sheets.keys())[:5])}..." if is_parsed else "不可"),
         ("3. 「結果」のグラフ", has_chart("結果"), "あり" if has_chart("結果") else "なし"),
         ("4. D34: AVERAGE関数", "AVERAGE" in f_d34, f_d34 if f_d34 else v_d34),
         ("5. K46: IF判定式", "IF" in f_k46 and "D46" in f_k46 and "$D$12" in f_k46, f_k46),
@@ -61,16 +69,18 @@ st.title("📊 ODS 課題判定")
 uploaded_file = st.file_uploader("ODSファイルをアップロード", type=["ods"], label_visibility="collapsed")
 
 if uploaded_file:
+    # 判定実行
     res = get_check_results(uploaded_file.read(), uploaded_file.name)
+    
     if res:
         score = sum(1 for r in res if r["判定"] == "✔")
-        st.subheader(f"スコア: {score} / 12")
+        st.subheader(f"クリア項目数: {score} / 12")
         
-        # テーブルを表示
+        # 結果テーブル
         st.table(res)
         
         if score == 12:
             st.balloons()
-            st.success("すべての項目の最低条件をクリアしました。")
+            st.success("全ての最低限のチェックをクリアしました！")
     else:
-        st.error("ファイルを読み込めませんでした。")
+        st.error("判定処理中に致命的なエラーが発生しました。")
