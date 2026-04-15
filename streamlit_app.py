@@ -9,17 +9,14 @@ def check_ods_task(file_bytes):
     results = []
 
     # --- 1. シート構成チェック ---
-    # 必須シートリスト（シート1系以外）
     core_required = ["sample", "data", "試験と成績", "結果"]
-    # シート1 または Sheet1 があるか
     sheet1_exists = "シート 1" in found_sheets or "Sheet1" in found_sheets
-    # 全てのコアシートが存在するか
     all_core_exists = all(s in found_sheets for s in core_required)
     
     is_sheet_structure_ok = all_core_exists and sheet1_exists
 
     results.append({
-        "check": "5つのシート（sample, data, シート 1(or Sheet1), 試験と成績, 結果）が含まれている",
+        "check": "5つのシート（sample, data, シート 1, 試験と成績, 結果）が含まれている",
         "status": "Done" if is_sheet_structure_ok else "NG"
     })
 
@@ -28,20 +25,35 @@ def check_ods_task(file_bytes):
     
     if sheet_exam:
         r_col_ok = True
-        # 参考コードに基づき R46:R75 (18列目) をチェック
-        # ezodfのインデックスは0始まりのため、列は17、行は45〜74
         try:
+            # 【修正ポイント】 rows() をリストに変換してからアクセスする
+            rows = list(sheet_exam.rows()) 
+            
+            # 46行目から75行目までループ (0-indexed なので 45から75)
             for row_idx in range(45, 75):
-                cell = sheet_exam.rows()[row_idx][17] # R列
+                # 行が存在するかチェック
+                if row_idx >= len(rows):
+                    r_col_ok = False
+                    break
+                
+                row = rows[row_idx]
+                # R列(18番目)が存在するかチェック
+                if len(row) < 18:
+                    r_col_ok = False
+                    break
+                    
+                cell = row[17] # R列
                 
                 formula = (cell.formula or "").lower()
                 value = cell.value
                 
                 # count関数が含まれているか、かつ結果が7か
+                # (ezodfの仕様により数値は float で比較するのが安全です)
                 if "count" not in formula or value != 7:
                     r_col_ok = False
                     break
-        except IndexError:
+        except Exception as e:
+            # デバッグ用にエラーを print しても良いです
             r_col_ok = False
 
         results.append({
