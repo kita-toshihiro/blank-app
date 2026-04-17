@@ -4,6 +4,7 @@ import io
 import datetime  # スケジュール表示用に追加
 from datetime import timezone, timedelta  # タイムゾーン設定用に追加
 import time      # アニメーション演出用
+import hashlib
 
 # グラフ判定用のネームスペース
 NS = {'draw': 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0'}
@@ -135,19 +136,34 @@ if uploaded_file:
 
         if user_id:
             # 偽造防止用の透かし表示
+            # 簡易的な検証用IDの生成
+            v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
+
             st.markdown(f"""
-                <div style="
-                    background-color: #f0f2f6;
-                    padding: 20px;
-                    border-radius: 10px;
-                    border: 2px dashed #ff4b4b;
-                    text-align: center;
-                ">
-                    <p style="margin: 0; color: #555;">【課題提出用 本人確認情報】</p>
-                    <h2 style="margin: 10px 0; color: #1f77b4;">確認済：{user_id}</h2>
-                    <p style="margin: 0; font-family: monospace; color: #888;">Timestamp: {current_time}</p>
-                    <p style="font-size: 0.8rem; color: #aaa;">※この表示を含めてスクリーンショットを撮影してください</p>
-                </div>
+    <div style="
+        position: relative;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 30px;
+        border-radius: 15px;
+        border: 3px double #ffffff;
+        text-align: center;
+        overflow: hidden;
+    ">
+        <div style="position: absolute; top: 10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap;">
+            OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER
+        </div>
+        
+        <div style="position: relative; z-index: 1;">
+            <p style="margin: 0; font-weight: bold; color: #444;">【提出用 真正性証明シグネチャ】</p>
+            <h2 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h2>
+            <p style="font-family: 'Courier New', monospace; background: rgba(255,255,255,0.5); display: inline-block; padding: 5px 15px; border-radius: 5px;">
+                ID: <span style="font-weight: bold;">{v_code}</span> / Time: {current_time}
+            </p>
+            <p style="font-size: 0.7rem; color: #666; margin-top: 10px;">
+                ※この領域の背景グラデーションと検証IDを含めて撮影してください。
+            </p>
+        </div>
+    </div>
             """, unsafe_allow_html=True)
             
             # 動きのある要素（偽造防止のアクセント）
