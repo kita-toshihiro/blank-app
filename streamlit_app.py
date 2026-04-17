@@ -89,10 +89,10 @@ def get_check_results(file_bytes, file_name):
 # --- Streamlit UI ---
 st.set_page_config(page_title="ODS Checker", layout="wide")
 
-st.title("📊 ３ブロック課題 ファイル提出前の最低限のチェック")
+st.title("📊 ３ブロック課題ファイル提出前の最低限のチェック")
 st.info("このサイトは、３ブロック課題の提出ファイルが最低限の体裁を持っているか確認するためのツールです。ここで３ブロック課題の**提出はできません。**")
 
-uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
+uploaded_file = st.file_uploader("３ブロック課題のODSファイルをアップロードしてください", type=["ods"])
 
 if uploaded_file:
     # バイナリを読み込み
@@ -125,7 +125,7 @@ if uploaded_file:
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            user_id = st.text_input("あなたの学籍番号または氏名を入力してください", placeholder="例: 262v1234")
+            user_id = st.text_input("あなたの学籍番号を入力してください", placeholder="例: 262v1234")
         
         with col2:
             # 日本時間 (JST) の設定
@@ -139,34 +139,24 @@ if uploaded_file:
             # 簡易的な検証用IDの生成
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
 
+            watermark_str = (("OFFICIAL CHECKER {v_code} " * 4) + "<br>") * 8
             st.markdown(f"""
             <div style="
                 position: relative;
                 background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                padding: 20px;
-                border-radius: 15px;
+                padding: 8px;
+                border-radius: 10px;
                 border: 3px double #ffffff;
                 text-align: center;
                 overflow: hidden;
                 color: #333;
             ">
-                <div style="position: absolute; top: -350px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
-                    OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
-                    OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
-                    OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
-                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
-                    OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
+                <div style="position: absolute; top: -350px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 30px; font-weight: bold; white-space: nowrap; pointer-events: none;">
+                    {watermark_str} 
                 </div>        
                 <div style="position: relative; z-index: 1;">
                     <p style="margin: 0; font-weight: bold; color: #444;">【提出用シグネチャ】</p>
-                    <h4 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h4>
+                    <h4 style="margin: 5px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h4>
                     <p style="font-family: 'Courier New', monospace; background: rgba(255,255,255,0.6); display: inline-block; padding: 5px 15px; border-radius: 5px; border: 1px solid #ccc;">
                         ID: <span style="font-weight: bold;">{v_code}</span> / Time: {current_time}
                     </p>
