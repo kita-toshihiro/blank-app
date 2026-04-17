@@ -2,6 +2,7 @@ import streamlit as st
 import ezodf
 import io
 import datetime  # スケジュール表示用に追加
+from datetime import timezone, timedelta  # タイムゾーン設定用に追加
 import time      # アニメーション演出用
 
 # グラフ判定用のネームスペース
@@ -119,21 +120,21 @@ if uploaded_file:
         # --- スクショ偽造防止セクション ---
     st.subheader("🛡️ スクショ偽造防止・本人確認")
     
-    with st.container(border=True):
+with st.container(border=True):
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            # ユーザーに学籍番号や氏名を入力させる（スクショに刻印するため）
             user_id = st.text_input("あなたの学籍番号または氏名を入力してください", placeholder="例: 2024AB1234")
         
         with col2:
-            # 現在時刻の取得
-            now = datetime.datetime.now()
+            # 日本時間 (JST) の設定
+            JST = timezone(timedelta(hours=+9), 'JST')
+            now = datetime.datetime.now(JST)
             current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-            st.metric("判定実行時刻", current_time)
+            st.metric("判定実行時刻 (JST)", current_time)
 
         if user_id:
-            # 偽造防止用の透かしのような表示
+            # 偽造防止用の透かし表示
             st.markdown(f"""
                 <div style="
                     background-color: #f0f2f6;
@@ -144,15 +145,14 @@ if uploaded_file:
                 ">
                     <p style="margin: 0; color: #555;">【課題提出用 本人確認情報】</p>
                     <h2 style="margin: 10px 0; color: #1f77b4;">確認済：{user_id}</h2>
-                    <p style="margin: 0; font-family: monospace; color: #888;">Hash: {hash(user_id + current_time)}</p>
+                    <p style="margin: 0; font-family: monospace; color: #888;">Timestamp: {current_time}</p>
                     <p style="font-size: 0.8rem; color: #aaa;">※この表示を含めてスクリーンショットを撮影してください</p>
                 </div>
-            """, unsafe_allow_stdio=False, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
             
             # 動きのある要素（偽造防止のアクセント）
             st.toast(f"確認用ID: {user_id} を刻印しました。")
         else:
             st.info("👆 学籍番号を入力すると、提出用の本人確認エリアが表示されます。")
 
-    st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
     st.write("📸 **撮影指示**: 上記の「本人確認情報」と「チェック結果（12項目）」が**両方一枚に収まるように**スクリーンショットを撮り、３ブロック課題の提出時に添付してください。")
