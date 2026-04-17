@@ -186,7 +186,7 @@ if uploaded_file:
                 </div>
                 <div style="position: relative; z-index: 1;">
                     <div style="text-align: center; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">
-                        <p style="margin: 0; font-weight: bold; color: #444;">【提出用チェック証明書】</p>
+                        <p style="margin: 0; font-weight: bold; color: #444;">【チェック証明書】</p>
                         <h4 style="margin: 2px 0; color: #1565c0;">学籍番号: {user_id}</h4>
                         <p style="font-size: 1.2rem; color: #666;">CHKID: {v_code} / Time: {current_time}</p>
                     </div>                    
@@ -194,9 +194,9 @@ if uploaded_file:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            st.write("📸 **スクショの範囲**: 上記の**透かし文字が入った領域全体**のスクリーンショット画像を撮り、３ブロック課題の提出時に添付してください。")
+            st.write("📸 **スクショの範囲**: 上の**【チェック証明書】**（透かしが入った領域）のスクリーンショット画像を撮り、３ブロック課題の提出時に添付してください。")
             
         else:
             # 学籍番号未入力時は通常のテーブルを表示
-            st.info("👆 学籍番号を入力すると、透かし入りの提出用画面が表示されます。")
+            st.info("👆 学籍番号を入力すると、透かし入りのチェック証明書が表示されます。")
             # st.dataframe(res, use_container_width=True, height=460)
