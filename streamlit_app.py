@@ -107,9 +107,9 @@ if uploaded_file:
             st.success(f"🎉 最低限のチェック完了（{score}/12)。あとは３ブロック課題チェックリストの**Doneの条件をよく読みチェックしてから**提出してください。")
             st.balloons()
         elif score >= 8:
-            st.warning(f"💡 あと少しです。 テキストを良く読んでください。クリア項目数: {score} / 12")
+            st.warning(f"💡 あと少し修正が必要です。テキストを良く読んでください。クリア項目数: {score} / 12")
         else:
-            st.error(f"⚠️ 修正が必要です。 テキストを良く読んでください。クリア項目数: {score} / 12")
+            st.error(f"⚠️ 修正が必要です。テキストを良く読んでください。クリア項目数: {score} / 12")
         
         # 結果のテーブル表示
         st.dataframe(res, use_container_width=True, height=460)
