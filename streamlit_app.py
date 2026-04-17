@@ -120,7 +120,7 @@ if uploaded_file:
         # --- スクショ偽造防止セクション ---
     st.subheader("🛡️ スクショ偽造防止・本人確認")
     
-with st.container(border=True):
+    with st.container(border=True):
         col1, col2 = st.columns([1, 1])
         
         with col1:
@@ -154,5 +154,4 @@ with st.container(border=True):
             st.toast(f"確認用ID: {user_id} を刻印しました。")
         else:
             st.info("👆 学籍番号を入力すると、提出用の本人確認エリアが表示されます。")
-
     st.write("📸 **撮影指示**: 上記の「本人確認情報」と「チェック結果（12項目）」が**両方一枚に収まるように**スクリーンショットを撮り、３ブロック課題の提出時に添付してください。")
