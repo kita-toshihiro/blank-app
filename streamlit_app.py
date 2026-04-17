@@ -194,10 +194,9 @@ if uploaded_file:
                 </div>
             </div>
             """, unsafe_allow_html=True)
+            st.write("📸 **スクショの範囲**: 上記の**透かし文字が入った表全体**が収まるようにスクリーンショットを撮り、提出してください。")
             
         else:
             # 学籍番号未入力時は通常のテーブルを表示
             st.info("👆 学籍番号を入力すると、透かし入りの提出用画面が表示されます。")
-            st.dataframe(res, use_container_width=True, height=460)
-
-        st.write("📸 **スクショの範囲**: 上記の**透かし文字が入った表全体**が収まるようにスクリーンショットを撮り、提出してください。")
+            # st.dataframe(res, use_container_width=True, height=460)
