@@ -85,8 +85,8 @@ def get_check_results(file_bytes, file_name):
 # --- Streamlit UI ---
 st.set_page_config(page_title="ODS Checker", layout="wide")
 
-st.title("📊 課題3 ファイル提出前の最低限のチェック")
-st.info("このサイトは、課題3の提出ファイルが最低限の条件を満たしているか確認するためのツールです。ここで課題3の**提出はできません。**")
+st.title("📊 ３ブロック課題 ファイル提出前の最低限のチェック")
+st.info("このサイトは、３ブロック課題の提出ファイルが最低限の体裁を持っているか確認するためのツールです。ここで３ブロック課題の**提出はできません。**")
 
 uploaded_file = st.file_uploader("ODSファイルをアップロードしてください", type=["ods"])
 
@@ -100,7 +100,7 @@ if uploaded_file:
         
         # スコア表示
         if score == 12:
-            st.success(f"🎉 最低限のチェック完了。クリア項目数: {score} / 12")
+            st.success(f"🎉 最低限のチェック完了（{score}/12)。ただし３ブロック課題のDoneの条件はもっと上であることに注意。")
             st.balloons()
         elif score >= 8:
             st.warning(f"💡 あと少しです。 テキストを良く読んでください。クリア項目数: {score} / 12")
@@ -113,4 +113,4 @@ if uploaded_file:
         
         st.write("---")
         # st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
-        st.write("📸 **メモ**: この画面のスクリーンショットを撮って、課題3提出時に添付してください。")
+        st.write("📸 **メモ**: この画面のスクリーンショットを撮って、３ブロック課題の提出時に添付してください。")
