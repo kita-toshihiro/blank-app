@@ -120,48 +120,95 @@ if uploaded_file:
         # --- スクショ偽造防止セクション ---
     # st.subheader("🛡️ スクショ偽造防止・本人確認")
     
-    with st.container(border=True):
-        col1, col2 = st.columns([1, 1])
+        # --- 結果表示セクション ---
         
-        with col1:
-            user_id = st.text_input("あなたの学籍番号を入力してエンターキーを押してください。", placeholder="例: 262v1234")
-        
-        with col2:
-            # 日本時間 (JST) の設定
-            JST = timezone(timedelta(hours=+9), 'JST')
-            now = datetime.datetime.now(JST)
-            current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-            st.metric("判定実行時刻 (JST)", current_time)
+        # 学籍番号入力を先に判定するために位置を調整
+        with st.container(border=True):
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                user_id = st.text_input("あなたの学籍番号を入力してエンターキーを押してください。", placeholder="例: 262v1234")
+            with col2:
+                JST = timezone(timedelta(hours=+9), 'JST')
+                now = datetime.datetime.now(JST)
+                current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+                st.metric("判定実行時刻 (JST)", current_time)
 
         if user_id:
-            # 簡易的な検証用IDの生成
+            # 1. 透かし情報の生成
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
+            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 5) + "<br>") * 40 # 表をカバーするため多めに生成
 
-            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 4) + "<br>") * 16
+            # 2. 結果リスト(res)をHTMLのテーブルに変換
+            table_html = """
+            <table style="width:100%; border-collapse: collapse; font-family: sans-serif; font-size: 0.9rem;">
+                <thead>
+                    <tr style="background-color: rgba(200, 200, 200, 0.3);">
+                        <th style="border: 1px solid #ddd; padding: 8px;">No</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">チェック項目</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">判定</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">内容/数式</th>
+                    </tr>
+                </thead>
+                <tbody>
+            """
+            for r in res:
+                color = "#d32f2f" if r["判定"] == "NG" else "#2e7d32"
+                table_html += f"""
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{r['No']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{r['チェック項目']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; color: {color};">{r['判定']}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; font-family: monospace;">{r['内容/数式']}</td>
+                    </tr>
+                """
+            table_html += "</tbody></table>"
+
+            # 3. 透かし背景付きコンテナにテーブルとシグネチャを配置
             st.markdown(f"""
             <div style="
                 position: relative;
-                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                padding: 8px;
+                background: #ffffff;
+                padding: 20px;
                 border-radius: 10px;
-                border: 3px double #ffffff;
-                text-align: center;
+                border: 2px solid #ccc;
                 overflow: hidden;
-                color: #333;
             ">
-                <div style="position: absolute; top: -350px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 30px; font-weight: bold; white-space: nowrap; pointer-events: none;">
-                    {watermark_str} 
-                </div>        
+                <div style="
+                    position: absolute;
+                    top: -100px;
+                    left: -100px;
+                    width: 200%;
+                    height: 200%;
+                    transform: rotate(-15deg);
+                    opacity: 0.07; 
+                    font-size: 24px;
+                    font-weight: bold;
+                    line-height: 1.5;
+                    pointer-events: none;
+                    z-index: 0;
+                ">
+                    {watermark_str}
+                </div>
+
                 <div style="position: relative; z-index: 1;">
-                    <p style="margin: 0; font-weight: bold; color: #444;">【提出用シグネチャ】</p>
-                    <h4 style="margin: 5px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h4>
-                    <p style="font-family: 'Courier New', monospace; background: rgba(255,255,255,0.6); display: inline-block; padding: 5px 15px; border-radius: 5px; border: 1px solid #ccc;">
-                        ID: <span style="font-weight: bold;">{v_code}</span> / Time: {current_time}
-                    </p>
+                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                        <p style="margin: 0; font-weight: bold; color: #444;">【提出用チェック証明書】</p>
+                        <h3 style="margin: 5px 0; color: #1565c0;">学籍番号: {user_id}</h3>
+                        <p style="font-size: 0.8rem; color: #666;">ID: {v_code} / Time: {current_time}</p>
+                    </div>
+                    
+                    {table_html}
+                    
+                    <div style="margin-top: 15px; text-align: right; font-size: 0.8rem; color: #888;">
+                        * 判定結果が12/12であることを確認してください。
+                    </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
         else:
-            st.info("👆 学籍番号を入力すると、本人確認情報が表示されます。")
-    st.write("📸 **スクショの範囲**: 上記の「提出用シグネチャ」と「チェック結果（12項目）」が**両方一枚に収まるように**スクリーンショットを撮り、３ブロック課題の提出時に添付してください。")
+            # 学籍番号未入力時は通常のテーブルを表示
+            st.info("👆 学籍番号を入力すると、透かし入りの提出用画面が表示されます。")
+            st.dataframe(res, use_container_width=True, height=460)
+
+        st.write("📸 **スクショの範囲**: 上記の**透かしが入った表全体**が収まるようにスクリーンショットを撮り、提出してください。")
