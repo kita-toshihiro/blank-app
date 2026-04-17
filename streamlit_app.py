@@ -170,7 +170,7 @@ if uploaded_file:
             ">
                 <div style="
                     position: absolute;
-                    top: -1000px;
+                    top: -1200px;
                     left: -1000px;
                     width: 600%;
                     height: 200%;
