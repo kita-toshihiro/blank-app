@@ -115,7 +115,7 @@ if uploaded_file:
         st.dataframe(res, use_container_width=True, height=460)
         #st.table(res)
         
-        st.write("---")
+        # st.write("---")
         # st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
 
         # --- スクショ偽造防止セクション ---
@@ -150,7 +150,7 @@ if uploaded_file:
                 overflow: hidden;
                 color: #333;
             ">
-                <div style="position: absolute; top: 10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
+                <div style="position: absolute; top: -10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
                     OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
                     OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
                     OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
