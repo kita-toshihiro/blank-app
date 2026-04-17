@@ -170,9 +170,9 @@ if uploaded_file:
             ">
                 <div style="
                     position: absolute;
-                    top: -800px;
-                    left: -800px;
-                    width: 400%;
+                    top: -1000px;
+                    left: -1000px;
+                    width: 600%;
                     height: 200%;
                     transform: rotate(-15deg);
                     opacity: 0.07; 
