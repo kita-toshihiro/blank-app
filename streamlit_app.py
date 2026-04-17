@@ -140,34 +140,35 @@ if uploaded_file:
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
 
             st.markdown(f"""
-    <div style="
-        position: relative;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 30px;
-        border-radius: 15px;
-        border: 3px double #ffffff;
-        text-align: center;
-        overflow: hidden;
-    ">
-        <div style="position: absolute; top: 10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap;">
-            OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER
-        </div>
-        
-        <div style="position: relative; z-index: 1;">
-            <p style="margin: 0; font-weight: bold; color: #444;">【提出用 真正性証明シグネチャ】</p>
-            <h2 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h2>
-            <p style="font-family: 'Courier New', monospace; background: rgba(255,255,255,0.5); display: inline-block; padding: 5px 15px; border-radius: 5px;">
-                ID: <span style="font-weight: bold;">{v_code}</span> / Time: {current_time}
-            </p>
-            <p style="font-size: 0.7rem; color: #666; margin-top: 10px;">
-                ※この領域の背景グラデーションと検証IDを含めて撮影してください。
-            </p>
-        </div>
-    </div>
+            <div style="
+                position: relative;
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                padding: 30px;
+                border-radius: 15px;
+                border: 3px double #ffffff;
+                text-align: center;
+                overflow: hidden;
+                color: #333;
+            ">
+                <div style="position: absolute; top: 10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
+                    OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER
+                </div>
+                
+                <div style="position: relative; z-index: 1;">
+                    <p style="margin: 0; font-weight: bold; color: #444;">【提出用 真正性証明シグネチャ】</p>
+                    <h2 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h2>
+                    <p style="font-family: 'Courier New', monospace; background: rgba(255,255,255,0.6); display: inline-block; padding: 5px 15px; border-radius: 5px; border: 1px solid #ccc;">
+                        ID: <span style="font-weight: bold;">{v_code}</span> / Time: {current_time}
+                    </p>
+                    <p style="font-size: 0.8rem; color: #666; margin-top: 10px; font-weight: bold;">
+                        ※この背景色と検証ID( {v_code} )を含めてスクリーンショットを撮影してください。
+                    </p>
+                </div>
+            </div>
             """, unsafe_allow_html=True)
             
             # 動きのある要素（偽造防止のアクセント）
-            st.toast(f"確認用ID: {user_id} を刻印しました。")
+            #st.toast(f"確認用ID: {user_id} を刻印しました。")
         else:
             st.info("👆 学籍番号を入力すると、提出用の本人確認エリアが表示されます。")
     st.write("📸 **撮影指示**: 上記の「本人確認情報」と「チェック結果（12項目）」が**両方一枚に収まるように**スクリーンショットを撮り、３ブロック課題の提出時に添付してください。")
