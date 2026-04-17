@@ -172,7 +172,7 @@ if uploaded_file:
                     position: absolute;
                     top: -500px;
                     left: -500px;
-                    width: 200%;
+                    width: 400%;
                     height: 200%;
                     transform: rotate(-15deg);
                     opacity: 0.07; 
