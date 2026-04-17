@@ -150,7 +150,7 @@ if uploaded_file:
                 overflow: hidden;
                 color: #333;
             ">
-                <div style="position: absolute; top: -250px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
+                <div style="position: absolute; top: -300px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
                     OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
                     OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
                     OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER
