@@ -133,7 +133,7 @@ if uploaded_file:
         if user_id:
             # 1. 透かし情報の生成
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
-            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 5) + "<br>") * 80 # 表をカバーするため多めに生成
+            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 10) + "<br>") * 80 # 表をカバーするため多めに生成
 
             # 2. 結果リスト(res)をHTMLのテーブルに変換
             table_html = """
