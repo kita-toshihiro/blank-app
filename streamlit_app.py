@@ -151,9 +151,9 @@ if uploaded_file:
                 color: #333;
             ">
                 <div style="position: absolute; top: 10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
-                    OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER
-                    OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER<br>
-                    OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER
+                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
+                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
+                    OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
                 </div>        
                 <div style="position: relative; z-index: 1;">
                     <p style="margin: 0; font-weight: bold; color: #444;">【提出用 真正性証明シグネチャ】</p>
