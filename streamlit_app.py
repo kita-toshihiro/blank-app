@@ -116,10 +116,7 @@ if uploaded_file:
         #st.table(res)
         
         # st.write("---")
-
-        # --- スクショ偽造防止セクション ---
-    # st.subheader("🛡️ スクショ偽造防止・本人確認")
-    
+   
         # --- 結果表示セクション ---
         
         # 学籍番号入力を先に判定するために位置を調整
@@ -136,7 +133,7 @@ if uploaded_file:
         if user_id:
             # 1. 透かし情報の生成
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
-            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 5) + "<br>") * 40 # 表をカバーするため多めに生成
+            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 5) + "<br>") * 80 # 表をカバーするため多めに生成
 
             # 2. 結果リスト(res)をHTMLのテーブルに変換
             table_html = """
@@ -173,8 +170,8 @@ if uploaded_file:
             ">
                 <div style="
                     position: absolute;
-                    top: -100px;
-                    left: -100px;
+                    top: -200px;
+                    left: -200px;
                     width: 200%;
                     height: 200%;
                     transform: rotate(-15deg);
@@ -194,9 +191,6 @@ if uploaded_file:
                         <p style="font-size: 0.8rem; color: #666;">ID: {v_code} / Time: {current_time}</p>
                     </div>                    
                     {table_html}
-                    <div style="margin-top: 15px; text-align: right; font-size: 0.8rem; color: #888;">
-                        * 判定結果が12/12であることを確認してください。
-                    </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -206,4 +200,4 @@ if uploaded_file:
             st.info("👆 学籍番号を入力すると、透かし入りの提出用画面が表示されます。")
             st.dataframe(res, use_container_width=True, height=460)
 
-        st.write("📸 **スクショの範囲**: 上記の**透かしが入った表全体**が収まるようにスクリーンショットを撮り、提出してください。")
+        st.write("📸 **スクショの範囲**: 上記の**透かし文字が入った表全体**が収まるようにスクリーンショットを撮り、提出してください。")
