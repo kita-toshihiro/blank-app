@@ -119,13 +119,13 @@ if uploaded_file:
         # st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
 
         # --- スクショ偽造防止セクション ---
-    st.subheader("🛡️ スクショ偽造防止・本人確認")
+    # st.subheader("🛡️ スクショ偽造防止・本人確認")
     
     with st.container(border=True):
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            user_id = st.text_input("あなたの学籍番号または氏名を入力してください", placeholder="例: 2024AB1234")
+            user_id = st.text_input("あなたの学籍番号または氏名を入力してください", placeholder="例: 262v1234")
         
         with col2:
             # 日本時間 (JST) の設定
@@ -154,10 +154,13 @@ if uploaded_file:
                     OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
                     OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
                     OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
+                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER
+                    OFFICIAL CHECKER {v_code} OFFICIAL CHECKER  {v_code} OFFICIAL CHECKER<br>
+                    OFFICIAL  {v_code} CHECKER OFFICIAL  {v_code} CHECKER OFFICIAL CHECKER<br>
                 </div>        
                 <div style="position: relative; z-index: 1;">
                     <p style="margin: 0; font-weight: bold; color: #444;">【提出用 真正性証明シグネチャ】</p>
-                    <h2 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h2>
+                    <h4 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h4>
                     <p style="font-family: 'Courier New', monospace; background: rgba(255,255,255,0.6); display: inline-block; padding: 5px 15px; border-radius: 5px; border: 1px solid #ccc;">
                         ID: <span style="font-weight: bold;">{v_code}</span> / Time: {current_time}
                     </p>
