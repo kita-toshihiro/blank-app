@@ -137,7 +137,7 @@ if uploaded_file:
             # 簡易的な検証用IDの生成
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
 
-            watermark_str = (("OFFICIAL CHECKER {v_code} " * 4) + "<br>") * 8
+            watermark_str = ((f"OFFICIAL CHECKER {v_code} " * 4) + "<br>") * 16
             st.markdown(f"""
             <div style="
                 position: relative;
