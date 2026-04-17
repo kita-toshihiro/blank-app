@@ -153,14 +153,12 @@ if uploaded_file:
             """
             for r in res:
                 color = "#d32f2f" if r["判定"] == "NG" else "#2e7d32"
-                table_html += f"""
-                    <tr>
+                table_html += f"""<tr>
                         <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">{r['No']}</td>
                         <td style="border: 1px solid #ddd; padding: 8px;">{r['チェック項目']}</td>
                         <td style="border: 1px solid #ddd; padding: 8px; text-align: center; font-weight: bold; color: {color};">{r['判定']}</td>
                         <td style="border: 1px solid #ddd; padding: 8px; font-family: monospace;">{r['内容/数式']}</td>
-                    </tr>
-                """
+                    </tr>"""
             table_html += "</tbody></table>"
 
             # 3. 透かし背景付きコンテナにテーブルとシグネチャを配置
