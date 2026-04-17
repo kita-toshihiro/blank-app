@@ -189,16 +189,13 @@ if uploaded_file:
                 ">
                     {watermark_str}
                 </div>
-
                 <div style="position: relative; z-index: 1;">
                     <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
                         <p style="margin: 0; font-weight: bold; color: #444;">【提出用チェック証明書】</p>
                         <h3 style="margin: 5px 0; color: #1565c0;">学籍番号: {user_id}</h3>
                         <p style="font-size: 0.8rem; color: #666;">ID: {v_code} / Time: {current_time}</p>
-                    </div>
-                    
+                    </div>                    
                     {table_html}
-                    
                     <div style="margin-top: 15px; text-align: right; font-size: 0.8rem; color: #888;">
                         * 判定結果が12/12であることを確認してください。
                     </div>
