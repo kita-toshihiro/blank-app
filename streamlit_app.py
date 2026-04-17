@@ -100,7 +100,7 @@ if uploaded_file:
         
         # スコア表示
         if score == 12:
-            st.success(f"🎉 最低限のチェック完了（{score}/12)。ただし３ブロック課題のDoneの条件はもっと上であることに注意。")
+            st.success(f"🎉 最低限のチェック完了（{score}/12)。ただし３ブロック課題のDoneの条件は満たしていないかもしれないことに注意。")
             st.balloons()
         elif score >= 8:
             st.warning(f"💡 あと少しです。 テキストを良く読んでください。クリア項目数: {score} / 12")
