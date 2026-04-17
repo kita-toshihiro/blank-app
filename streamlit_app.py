@@ -152,8 +152,7 @@ if uploaded_file:
             ">
                 <div style="position: absolute; top: 10px; left: -20px; transform: rotate(-20deg); opacity: 0.1; font-size: 40px; font-weight: bold; white-space: nowrap; pointer-events: none;">
                     OFFICIAL CHECKER OFFICIAL CHECKER OFFICIAL CHECKER
-                </div>
-                
+                </div>        
                 <div style="position: relative; z-index: 1;">
                     <p style="margin: 0; font-weight: bold; color: #444;">【提出用 真正性証明シグネチャ】</p>
                     <h2 style="margin: 10px 0; color: #d32f2f; letter-spacing: 2px;">{user_id}</h2>
