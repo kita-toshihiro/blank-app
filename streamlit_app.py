@@ -123,7 +123,7 @@ if uploaded_file:
         with st.container(border=True):
             col1, col2 = st.columns([1, 1])
             with col1:
-                user_id = st.text_input("あなたの学籍番号を入力してエンターキーを押してください。", placeholder="例: 262v1234")
+                user_id = st.text_input("あなたの学籍番号を入力してEnterキーを押してください。", placeholder="例: 262v1234")
             with col2:
                 JST = timezone(timedelta(hours=+9), 'JST')
                 now = datetime.datetime.now(JST)
