@@ -170,8 +170,8 @@ if uploaded_file:
             ">
                 <div style="
                     position: absolute;
-                    top: -1200px;
-                    left: -1000px;
+                    top: -1600px;
+                    left: -1200px;
                     width: 600%;
                     height: 200%;
                     transform: rotate(-15deg);
@@ -185,10 +185,10 @@ if uploaded_file:
                     {watermark_str}
                 </div>
                 <div style="position: relative; z-index: 1;">
-                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                    <div style="text-align: center; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px;">
                         <p style="margin: 0; font-weight: bold; color: #444;">【提出用チェック証明書】</p>
-                        <h3 style="margin: 5px 0; color: #1565c0;">学籍番号: {user_id}</h3>
-                        <p style="font-size: 1.8rem; color: #666;">CHKID: {v_code} / Time: {current_time}</p>
+                        <h4 style="margin: 2px 0; color: #1565c0;">学籍番号: {user_id}</h4>
+                        <p style="font-size: 1.2rem; color: #666;">CHKID: {v_code} / Time: {current_time}</p>
                     </div>                    
                     {table_html}
                 </div>
