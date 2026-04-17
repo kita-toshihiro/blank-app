@@ -116,7 +116,6 @@ if uploaded_file:
         #st.table(res)
         
         # st.write("---")
-        # st.caption("※判定は数式内の文字列（IF, COUNT等）を検索して行っています。")
 
         # --- スクショ偽造防止セクション ---
     # st.subheader("🛡️ スクショ偽造防止・本人確認")
@@ -125,7 +124,7 @@ if uploaded_file:
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            user_id = st.text_input("あなたの学籍番号を入力してください", placeholder="例: 262v1234")
+            user_id = st.text_input("あなたの学籍番号を入力してエンターキーを押してください。", placeholder="例: 262v1234")
         
         with col2:
             # 日本時間 (JST) の設定
@@ -135,7 +134,6 @@ if uploaded_file:
             st.metric("判定実行時刻 (JST)", current_time)
 
         if user_id:
-            # 偽造防止用の透かし表示
             # 簡易的な検証用IDの生成
             v_code = hashlib.md5(f"{user_id}{current_time}".encode()).hexdigest()[:6].upper()
 
@@ -164,8 +162,6 @@ if uploaded_file:
             </div>
             """, unsafe_allow_html=True)
             
-            # 動きのある要素（偽造防止のアクセント）
-            #st.toast(f"確認用ID: {user_id} を刻印しました。")
         else:
-            st.info("👆 学籍番号を入力すると、提出用の本人確認エリアが表示されます。")
+            st.info("👆 学籍番号を入力すると、本人確認情報が表示されます。")
     st.write("📸 **スクショの範囲**: 上記の「提出用シグネチャ」と「チェック結果（12項目）」が**両方一枚に収まるように**スクリーンショットを撮り、３ブロック課題の提出時に添付してください。")
