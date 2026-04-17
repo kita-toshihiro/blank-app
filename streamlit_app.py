@@ -165,7 +165,7 @@ if uploaded_file:
                 background: #ffffff;
                 padding: 20px;
                 border-radius: 10px;
-                border: 2px solid #ccc;
+                border: 5px solid #ccc;
                 overflow: hidden;
             ">
                 <div style="
