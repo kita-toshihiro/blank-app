@@ -92,7 +92,7 @@ st.set_page_config(page_title="ODS Checker", layout="wide")
 st.title("📊 課題ファイル提出前の最低限のチェック")
 st.info("ここで、３ブロック課題の提出ファイルの最低限の体裁のチェックができます。課題の**提出はできません。**")
 
-uploaded_file = st.file_uploader("チェックする３ブロック課題のODSファイルをアップロードしてください", type=["ods"])
+uploaded_file = st.file_uploader("チェックしたい３ブロック課題のODSファイルをアップロードしてください", type=["ods"])
 
 if uploaded_file:
     # バイナリを読み込み
