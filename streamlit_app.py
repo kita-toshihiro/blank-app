@@ -89,8 +89,8 @@ def get_check_results(file_bytes, file_name):
 # --- Streamlit UI ---
 st.set_page_config(page_title="ODS Checker", layout="wide")
 
-st.title("📊 ３ブロック課題ファイル提出前の最低限のチェック")
-st.info("このサイトでは、３ブロック課題の提出ファイルが最低限の体裁を持っているかチェックします。ここでは３ブロック課題の**提出はできません。**")
+st.title("📊 課題ファイル提出前の最低限のチェック")
+st.info("このサイトでは、３ブロック課題の提出ファイルが最低限の体裁を持っているかチェックします。３ブロック課題の**提出場所ではない**です。")
 
 uploaded_file = st.file_uploader("チェックする３ブロック課題のODSファイルをアップロードしてください", type=["ods"])
 
