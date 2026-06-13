@@ -53,16 +53,16 @@ def get_check_results(file_bytes, file_name):
     # --- 12項目の判定ロジック ---
     
     # 2. シート名チェック
-    required_fixed = ["sample", "data", "試験と成績", "結果"]
+    required_fixed = ["ict_3B - data", "試験と成績", "結果"]
     has_fixed = all(s in sheets for s in required_fixed)
-    has_sheet1 = "シート 1" in sheets or "Sheet1" in sheets or "シート１" in sheets or "シート1" in sheets
-    check2 = is_parsed and has_fixed and has_sheet1
+    # has_sheet1 = "シート 1" in sheets or "Sheet1" in sheets or "シート１" in sheets or "シート1" in sheets
+    check2 = is_parsed and has_fixed
     found_sheets_names = ", ".join(sheets.keys()) if sheets else "シートなし"
     
     # リスト定義 (項目名, 判定式, 詳細情報)
     checks = [
         ("1. ODS形式である", is_parsed and file_name.lower().endswith('.ods'), file_name),
-        ("2. 指定の5つのシートを含んでいる", check2, found_sheets_names),
+        ("2. 指定の3つのシートを含んでいる", check2, found_sheets_names),
         ("3. 「結果」にグラフがある", has_chart("結果"), "draw:frameの有無"),
         ("4. 「試験と成績」D34に数式がある", f_d34 != "", f_d34),
         ("5. 「試験と成績」K46に判定式がある", "IF" in f_d34 or "IF" in f_k46, f_k46),
